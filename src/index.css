@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes loading-bar {
+    0% {
+      left: -100%;
+    }
+    50% {
+      left: 0;
+      width: 100%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
+  
+  @keyframes loading-line {
+    0% {
+      left: -100%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
+  
+  .animate-loading-bar {
+    animation: loading-bar 1s infinite ease-in-out;
+    width: 50%; /* Largura da "onda" */
+    position: absolute;
+  }
+  
+  .animate-loading-line {
+    animation: loading-line 2s infinite linear; /* Movimento contínuo da linha preta */
+    height: 100%; /* Altura da linha preta dentro da barra */
+    width: 100%; /* Largura da barra */
+    position: absolute;
+  }
+  
