@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Loader2 } from 'lucide-react';  // Importando ícones
-import logo from '../assets/logo.png';  // Importando a logo
+import { Mail, Lock, User, Loader2 } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 function Register() {
   const [name, setName] = useState('');
@@ -10,26 +10,47 @@ function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
+
+    if (password !== confirmPassword) {
+      setError('As senhas não coincidem!');
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      // Simulando uma chamada de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('http://localhost:3000/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          name,
+          age: parseInt(age),
+        }),
+      });
 
-      // Verificação de senhas
-      if (password !== confirmPassword) {
-        alert('As senhas não coincidem!');
-        setIsLoading(false);
-        return;
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Aqui você pode mostrar um erro mais detalhado, caso o servidor retorne
+        throw new Error(data.error || 'Erro ao realizar cadastro');
       }
 
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       navigate('/dashboard');
     } catch (error) {
-      console.error('Cadastro falhou:', error);
+      console.error('Erro no cadastro:', error);
+      setError(error instanceof Error ? error.message : 'Erro ao realizar cadastro');
     } finally {
       setIsLoading(false);
     }
@@ -39,15 +60,18 @@ function Register() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <img src={logo} alt="Logo" className="h-12 w-auto" /> {/* Logo fora do retângulo roxo */}
+          <img src={logo} alt="Logo" className="h-12 w-auto" />
         </div>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          
-        </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
+          {error && (
+            <div className="mb-4 p-3 rounded bg-red-50 text-red-600 text-sm">
+              {error}
+            </div>
+          )}
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -122,7 +146,7 @@ function Register() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -171,27 +195,16 @@ function Register() {
             </div>
           </form>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Ou</span>
-              </div>
-            </div>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Já tem uma conta?{' '}
-                <button
-                  onClick={() => navigate('/login')}
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                  Entre
-                </button>
-              </p>
-            </div>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Já tem uma conta?{' '}
+              <button
+                onClick={() => navigate('/login')}
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Entre
+              </button>
+            </p>
           </div>
         </div>
       </div>

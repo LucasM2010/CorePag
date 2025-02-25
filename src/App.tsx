@@ -4,9 +4,12 @@ import Dashboard from './pages/Dashboard';
 import Register from './pages/Register';
 import BalanceSheetComplete from './pages/Balancetes';
 import MovimentacoesRecentes from './pages/MovimentacoesRecentes';
-import Cripto from './pages/Cripto';
 import LoadingScreen from './pages/LoadingScreen';
 import Config from './pages/Config';
+import Linkdeindicacao from './pages/linkdeindicacao';
+import Afiliados from './pages/afiliados';
+import Users from './pages/Users';
+import Payments from './pages/payments';
 
 function App() {
   return (
@@ -17,10 +20,12 @@ function App() {
       <Route path="/register" element={<Register/>} />
       <Route path="/balancetes" element={<BalanceSheetComplete/>} />
       <Route path="/movimentacoesrecentes" element={<MovimentacoesRecentes/>} />
-      <Route path="/criptomoedas" element={<Cripto/>} />
+      <Route path="/linkdeindicacao" element={<Linkdeindicacao/>} />
       <Route path="/loading" element={<LoadingScreen/>} />
       <Route path="/configuracoes" element={<Config/>} />
-      
+      <Route path="/afiliados" element={<Afiliados/>} />
+      <Route path="/users" element={<Users/>} />
+      <Route path="/payments" element={<Payments/>} />
     </Routes>
   );
 }

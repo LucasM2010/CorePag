@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Logo from '../assets/logo.png';
 import { 
   DollarSign, 
@@ -15,13 +15,12 @@ import {
   Eye,
   EyeOff,
   ChevronDown,
-  Send,
-  Banknote,
-  PiggyBank,
-  ArrowUpDown
+  Wallet,
+  Users,
+  UserPlus,
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const revenueData = [
   { month: 'Jan', receita: 45000, despesa: 32000 },
@@ -40,13 +39,38 @@ const balanceData = [
   { category: 'Patrimônio Líquido', valor: 350000 },
 ];
 
-function Dashboard() {
+function Banking() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showBalance, setShowBalance] = useState(true);
-  const [showNewTransactionMenu, setShowNewTransactionMenu] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [bankingMenuOpen, setBankingMenuOpen] = useState(true);
+  const [userData, setUserData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    role: '',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+  });
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      setUserData(prevState => ({
+        ...prevState,
+        name: user.name || 'Usuário',
+        email: user.email || '',
+        role: user.role || 'Usuário',
+        company: user.company || ''
+      }));
+    }
+  }, []);
+
   const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 
@@ -62,6 +86,8 @@ function Dashboard() {
   };
 
   const currentBalance = 86000;
+
+  const location = useLocation();
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -84,30 +110,116 @@ function Dashboard() {
         </div>
 
         <nav className="flex-1 mt-4">
-          {[
-            { icon: LayoutDashboard, label: 'Dashboard', to: '/dashboard', active: true },
-            { icon: FileText, label: 'Balancetes', to: '/balancetes' },
-            { icon: History, label: 'Movimentações', to: '/movimentacoesrecentes' },
-            { icon: Briefcase, label: 'Criptomoedas', to: '/Criptomoedas' },
-            { icon: Settings, label: 'Configurações', to: '/configuracoes' },
-          ].map((item, index) => (
+          {/* Banking Section with Submenu */}
+          <div className="px-4">
             <button
-              key={index}
-              onClick={() => handleNavigation(item.to)}
-              className={`w-full flex items-center px-4 py-3 ${
-                item.active
+              onClick={() => sidebarOpen && setBankingMenuOpen(!bankingMenuOpen)}
+              className="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg"
+            >
+              <div className="flex items-center">
+                <Wallet className={`h-5 w-5 ${!sidebarOpen ? 'mx-auto' : ''}`} />
+                {sidebarOpen && <span className="ml-3 font-medium">Banking</span>}
+              </div>
+              {sidebarOpen && (
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${
+                    bankingMenuOpen ? 'transform rotate-180' : ''
+                  }`}
+                />
+              )}
+            </button>
+
+            {/* Banking Submenu */}
+            {sidebarOpen && bankingMenuOpen && (
+              <div className="ml-4 mt-2 space-y-1">
+                {[
+                  { icon: LayoutDashboard, label: 'Dashboard', to: '/dashboard', active: true },
+                  { icon: FileText, label: 'Balancetes', to: '/balancetes' },
+                  { icon: History, label: 'Movimentações', to: '/movimentacoesrecentes' },
+                  { icon: Briefcase, label: 'Link de Indicação', to: '/linkdeindicacao' },
+                  
+                ].map((item, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleNavigation(item.to)}
+                    className={`w-full flex items-center px-4 py-2 ${
+                      item.active
+                        ? 'bg-indigo-50 text-indigo-600'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    } rounded-lg`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span className="ml-3 text-sm">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+{/* Update the Afiliados button */}
+<div className="px-4 mt-4">
+  <button
+    onClick={() => handleNavigation('/afiliados')}
+    className={`w-full flex items-center px-4 py-2 rounded-lg ${
+      location.pathname === '/afiliados'
+        ? 'bg-indigo-50 text-indigo-600'
+        : 'text-gray-600 hover:bg-gray-50'
+    }`}
+  >
+    <Users className={`h-5 w-5 ${!sidebarOpen ? 'mx-auto' : ''}`} />
+    {sidebarOpen && <span className="ml-3 font-medium">Afiliados</span>}
+  </button>
+</div>
+
+{/* New Users section */}
+<div className="px-4 mt-4">
+  <button
+    onClick={() => handleNavigation('/users')}
+    className={`w-full flex items-center px-4 py-2 rounded-lg ${
+      location.pathname === '/usuarios'
+        ? 'bg-indigo-50 text-indigo-600'
+        : 'text-gray-600 hover:bg-gray-50'
+    }`}
+  >
+    <UserPlus className={`h-5 w-5 ${!sidebarOpen ? 'mx-auto' : ''}`} />
+    {sidebarOpen && <span className="ml-3 font-medium">Usuários</span>}
+  </button>
+</div>
+
+{/* Payments section */}
+<div className="px-4 mt-4">
+            <button
+              onClick={() => navigate('/payments')}
+              className={`w-full flex items-center px-4 py-2 rounded-lg ${
+                location.pathname === '/payments'
                   ? 'bg-indigo-50 text-indigo-600'
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              <item.icon
-                className={`h-5 w-5 ${!sidebarOpen ? 'mx-auto' : ''}`}
-              />
-              {sidebarOpen && (
-                <span className="ml-3 font-medium">{item.label}</span>
-              )}
+              <CreditCard className={`h-5 w-5 ${!sidebarOpen ? 'mx-auto' : ''}`} />
+              {sidebarOpen && <span className="ml-3 font-medium">Payments</span>}
             </button>
-          ))}
+          </div>
+
+{/* Update the Settings button */}
+<div className="px-4 py-2 mt-6">
+  {[
+    { icon: Settings, label: 'Configurações', to: '/configuracoes' },
+  ].map((item, index) => (
+    <button
+      key={index}
+      onClick={() => handleNavigation(item.to)}
+      className={`w-full flex items-center px-4 py-2 mt-1 rounded-lg ${
+        location.pathname === item.to
+          ? 'bg-indigo-50 text-indigo-600'
+          : 'text-gray-600 hover:bg-gray-50'
+      }`}
+    >
+      <item.icon className={`h-5 w-5 ${!sidebarOpen ? 'mx-auto' : ''}`} />
+      {sidebarOpen && <span className="ml-3 text-sm">{item.label}</span>}
+    </button>
+  ))}
+</div>
         </nav>
 
         <div className="p-4 border-t">
@@ -128,35 +240,46 @@ function Dashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <h1 className="text-2xl font-bold text-gray-900">Olá, Lucas Martins!</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Olá, {userData.name}!</h1>
               </div>
+              
+              {/* User Profile */}
               <div className="relative">
-                <button 
-                  onClick={() => setShowNewTransactionMenu(!showNewTransactionMenu)}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2"
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center space-x-3 focus:outline-none"
                 >
-                  <span>Nova Movimentação</span>
-                  <ChevronDown className="h-4 w-4" />
+                  <img
+                    src={userData.avatar}
+                    alt="Profile"
+                    className="h-10 w-10 rounded-full object-cover border-2 border-indigo-600"
+                  />
+                  <div className="hidden md:block text-left">
+                    <p className="text-sm font-medium text-gray-900">{userData.name}</p>
+                    <p className="text-xs text-gray-500">{userData.role}</p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-gray-500" />
                 </button>
-                
-                {showNewTransactionMenu && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg z-50">
+
+                {showProfileMenu && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50">
+                    <div className="p-4 border-b">
+                      <p className="text-sm font-medium text-gray-900">{userData.name}</p>
+                      <p className="text-xs text-gray-500">{userData.email}</p>
+                      <p className="text-xs text-gray-500 mt-1">{userData.company}</p>
+                    </div>
                     <div className="py-1">
-                      <button className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-                        <Send className="h-4 w-4" />
-                        <span>Pix</span>
+                      <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">
+                        Meu Perfil
                       </button>
-                      <button className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-                        <ArrowUpDown className="h-4 w-4" />
-                        <span>Transferência</span>
+                      <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">
+                        Configurações
                       </button>
-                      <button className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-                        <Banknote className="h-4 w-4" />
-                        <span>Depósito</span>
-                      </button>
-                      <button className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-                        <PiggyBank className="h-4 w-4" />
-                        <span>Saque</span>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100"
+                      >
+                        Sair
                       </button>
                     </div>
                   </div>
@@ -350,4 +473,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default Banking;

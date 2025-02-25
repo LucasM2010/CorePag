@@ -1,24 +1,43 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Loader2 } from 'lucide-react';
-import logo from '../assets/logo.png';  // Importando a logo
+import logo from '../assets/logo.png';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
 
     try {
-      // Simulando uma chamada de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      navigate('/dashboard');
+      const response = await fetch('http://localhost:3000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Credenciais inválidas');
+      }
+
+      // Armazena o token e dados do usuário
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      navigate('/loading');
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Erro no login:', error);
+      setError(error instanceof Error ? error.message : 'Erro ao realizar login');
     } finally {
       setIsLoading(false);
     }
@@ -28,15 +47,18 @@ function Login() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <img src={logo} alt="Logo" className="h-12 w-auto" /> {/* Logo fora do retângulo roxo */}
+          <img src={logo} alt="Logo" className="h-12 w-auto" />
         </div>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          
-        </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
+          {error && (
+            <div className="mb-4 p-3 rounded bg-red-50 text-red-600 text-sm">
+              {error}
+            </div>
+          )}
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -72,33 +94,12 @@ function Login() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 p-2.5 border"
                   placeholder="••••••••"
                 />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Lembrar-me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Esqueceu sua senha?
-                </a>
               </div>
             </div>
 
@@ -111,7 +112,7 @@ function Login() {
                 {isLoading ? (
                   <>
                     <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
-                    Entrando...
+                    Carregando...
                   </>
                 ) : (
                   'Entrar'
@@ -120,27 +121,16 @@ function Login() {
             </div>
           </form>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Ou</span>
-              </div>
-            </div>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Não possui uma conta?{' '}
-                <button
-                  onClick={() => navigate('/register')}
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                  Cadastre-se
-                </button>
-              </p>
-            </div>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Não tem uma conta?{' '}
+              <button
+                onClick={() => navigate('/register')}
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Cadastre-se
+              </button>
+            </p>
           </div>
         </div>
       </div>

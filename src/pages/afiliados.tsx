@@ -8,39 +8,23 @@ import {
   Settings,
   LogOut,
   Menu,
-  Download,
-  Filter,
-  Wallet,
-  ChevronDown,
   Users,
+  Download,
+  Search,
+  Filter,
+  ChevronDown,
+  Wallet,
   UserPlus,
   CreditCard,
 } from 'lucide-react';
 import Logo from '../assets/logo.png';
 
-const balanceteData = [
-  {
-    periodo: 'Março 2024',
-    ativoTotal: 1250000,
-    passivoTotal: 850000,
-    patrimonioLiquido: 400000,
-    resultado: 75000,
-    status: 'Fechado',
-  },
-  {
-    periodo: 'Fevereiro 2024',
-    ativoTotal: 1200000,
-    passivoTotal: 820000,
-    patrimonioLiquido: 380000,
-    resultado: 70000,
-    status: 'Fechado',
-  },
-];
-
-const Balancetes: React.FC = () => {
+const Afiliados = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [bankingMenuOpen, setBankingMenuOpen] = useState(true);
+  const [bankingMenuOpen, setBankingMenuOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('todos');
   const [userData, setUserData] = useState({
     name: '',
     email: '',
@@ -49,7 +33,9 @@ const Balancetes: React.FC = () => {
     role: '',
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
   });
+
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -75,23 +61,59 @@ const Balancetes: React.FC = () => {
     navigate(path);
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
+  const handleExportData = () => {
+    // Implementar lógica de exportação
+    console.log('Exportando dados...');
   };
 
-  const location = useLocation();
+  const isCurrentPath = (path: string) => {
+    return location.pathname === path;
+  };
+
+  const affiliatesData = [
+    {
+      id: 1,
+      name: 'João Silva',
+      email: 'joao.silva@email.com',
+      status: 'Ativo',
+      dateJoined: '15/03/2024',
+      sales: 12,
+      commission: 'R$ 1.500,00',
+    },
+    {
+      id: 2,
+      name: 'Maria Santos',
+      email: 'maria.santos@email.com',
+      status: 'Inativo',
+      dateJoined: '10/03/2024',
+      sales: 8,
+      commission: 'R$ 950,00',
+    },
+    {
+      id: 3,
+      name: 'Pedro Oliveira',
+      email: 'pedro.oliveira@email.com',
+      status: 'Pendente',
+      dateJoined: '12/03/2024',
+      sales: 5,
+      commission: 'R$ 600,00',
+    },
+  ];
+
+  const filteredAffiliates = affiliatesData
+    .filter(affiliate => 
+      affiliate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      affiliate.email.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter(affiliate => 
+      filterStatus === 'todos' ? true : affiliate.status.toLowerCase() === filterStatus.toLowerCase()
+    );
+    
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <aside
-        className={`${
-          sidebarOpen ? 'w-64' : 'w-20'
-        } bg-white shadow-sm transition-all duration-300 ease-in-out flex flex-col fixed h-full`}
-      >
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-sm transition-all duration-300 ease-in-out flex flex-col fixed h-full`}>
         <div className="p-4 flex items-center justify-between">
           <div className="flex items-center">
             <img
@@ -109,7 +131,7 @@ const Balancetes: React.FC = () => {
         </div>
 
         <nav className="flex-1 mt-4">
-          {/* Banking Section with Submenu */}
+          {/* Banking Section */}
           <div className="px-4">
             <button
               onClick={() => sidebarOpen && setBankingMenuOpen(!bankingMenuOpen)}
@@ -133,18 +155,16 @@ const Balancetes: React.FC = () => {
               <div className="ml-4 mt-2 space-y-1">
                 {[
                   { icon: LayoutDashboard, label: 'Dashboard', to: '/dashboard' },
-                  { icon: FileText, label: 'Balancetes', to: '/balancetes', active: true },
+                  { icon: FileText, label: 'Balancetes', to: '/balancetes' },
                   { icon: History, label: 'Movimentações', to: '/movimentacoesrecentes' },
                   { icon: Briefcase, label: 'Link de Indicação', to: '/linkdeindicacao' },
                 ].map((item, index) => (
                   <button
                     key={index}
                     onClick={() => handleNavigation(item.to)}
-                    className={`w-full flex items-center px-4 py-2 ${
-                      item.active
-                        ? 'bg-indigo-50 text-indigo-600'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    } rounded-lg`}
+                    className={`w-full flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg ${
+                      isCurrentPath(item.to) ? 'bg-indigo-50 text-indigo-600' : ''
+                    }`}
                   >
                     <item.icon className="h-4 w-4" />
                     <span className="ml-3 text-sm">{item.label}</span>
@@ -154,22 +174,20 @@ const Balancetes: React.FC = () => {
             )}
           </div>
 
-{/* Update the Afiliados button */}
-<div className="px-4 mt-4">
-  <button
-    onClick={() => handleNavigation('/afiliados')}
-    className={`w-full flex items-center px-4 py-2 rounded-lg ${
-      location.pathname === '/afiliados'
-        ? 'bg-indigo-50 text-indigo-600'
-        : 'text-gray-600 hover:bg-gray-50'
-    }`}
-  >
-    <Users className={`h-5 w-5 ${!sidebarOpen ? 'mx-auto' : ''}`} />
-    {sidebarOpen && <span className="ml-3 font-medium">Afiliados</span>}
-  </button>
-</div>
+          {/* Afiliados Section */}
+          <div className="px-4 mt-4">
+            <button
+              onClick={() => handleNavigation('/afiliados')}
+              className={`w-full flex items-center px-4 py-2 rounded-lg ${
+                isCurrentPath('/afiliados') ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              <Users className={`h-5 w-5 ${!sidebarOpen ? 'mx-auto' : ''}`} />
+              {sidebarOpen && <span className="ml-3 font-medium">Afiliados</span>}
+            </button>
+          </div>
 
-<div className="px-4 mt-4">
+          <div className="px-4 mt-4">
             <button
               onClick={() => handleNavigation('/users')}
               className={`w-full flex items-center px-4 py-2 rounded-lg ${
@@ -183,7 +201,7 @@ const Balancetes: React.FC = () => {
             </button>
           </div>
 
-          {/* Payments section */}
+{/* Payments section */}
 <div className="px-4 mt-4">
             <button
               onClick={() => navigate('/payments')}
@@ -198,25 +216,23 @@ const Balancetes: React.FC = () => {
             </button>
           </div>
 
-{/* Update the Settings button */}
-<div className="px-4 py-2 mt-6">
-  {[
-    { icon: Settings, label: 'Configurações', to: '/configuracoes' },
-  ].map((item, index) => (
-    <button
-      key={index}
-      onClick={() => handleNavigation(item.to)}
-      className={`w-full flex items-center px-4 py-2 mt-1 rounded-lg ${
-        location.pathname === item.to
-          ? 'bg-indigo-50 text-indigo-600'
-          : 'text-gray-600 hover:bg-gray-50'
-      }`}
-    >
-      <item.icon className={`h-5 w-5 ${!sidebarOpen ? 'mx-auto' : ''}`} />
-      {sidebarOpen && <span className="ml-3 text-sm">{item.label}</span>}
-    </button>
-  ))}
-</div>
+          {/* Other menu items */}
+          <div className="px-4 py-2 mt-6">
+            {[
+              { icon: Settings, label: 'Configurações', to: '/configuracoes' },
+            ].map((item, index) => (
+              <button
+                key={index}
+                onClick={() => handleNavigation(item.to)}
+                className={`w-full flex items-center px-4 py-2 mt-1 rounded-lg ${
+                  isCurrentPath(item.to) ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <item.icon className={`h-5 w-5 ${!sidebarOpen ? 'mx-auto' : ''}`} />
+                {sidebarOpen && <span className="ml-3 text-sm">{item.label}</span>}
+              </button>
+            ))}
+          </div>
         </nav>
 
         <div className="p-4 border-t">
@@ -233,9 +249,7 @@ const Balancetes: React.FC = () => {
       </aside>
 
       {/* Main Content */}
-      <div
-        className={`flex-1 ${sidebarOpen ? 'ml-64' : 'ml-20'} transition-all duration-300 ease-in-out`}
-      >
+      <div className={`flex-1 ${sidebarOpen ? 'ml-64' : 'ml-20'} transition-all duration-300`}>
         {/* Header */}
         <header className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -292,70 +306,105 @@ const Balancetes: React.FC = () => {
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">Balancetes</h1>
-            <div className="flex space-x-4">
-              <button className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                <Filter className="h-4 w-4" />
-                <span>Filtrar</span>
-              </button>
-              <button className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                <Download className="h-4 w-4" />
-                <span>Exportar</span>
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-900">Afiliados</h1>
+              <button
+                onClick={handleExportData}
+                className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Exportar Dados
               </button>
             </div>
-          </div>
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6">
+
+            {/* Search and Filter */}
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <div className="flex-1">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Buscar afiliados..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  >
+                    <option value="todos">Todos os Status</option>
+                    <option value="ativo">Ativo</option>
+                    <option value="inativo">Inativo</option>
+                    <option value="pendente">Pendente</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Affiliates Table */}
+            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
+                  <thead className="bg-gray-50">
                     <tr>
-                      {[
-                        'Período',
-                        'Ativo Total',
-                        'Passivo Total',
-                        'Patrimônio Líquido',
-                        'Resultado',
-                        'Status',
-                        'Ações',
-                      ].map((header, index) => (
-                        <th
-                          key={index}
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          {header}
-                        </th>
-                      ))}
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Nome
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Data de Entrada
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Vendas
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Comissão Total
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {balanceteData.map((item, index) => (
-                      <tr key={index}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {item.periodo}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {formatCurrency(item.ativoTotal)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {formatCurrency(item.passivoTotal)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {formatCurrency(item.patrimonioLiquido)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {formatCurrency(item.resultado)}
+                    {filteredAffiliates.map((affiliate) => (
+                      <tr key={affiliate.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{affiliate.name}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            {item.status}
+                          <div className="text-sm text-gray-500">{affiliate.email}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            affiliate.status === 'Ativo'
+                              ? 'bg-green-100 text-green-800'
+                              : affiliate.status === 'Inativo'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {affiliate.status}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <button className="text-indigo-600 hover:text-indigo-900">
-                            <FileText className="h-5 w-5" />
-                          </button>
+                          {affiliate.dateJoined}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {affiliate.sales}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {affiliate.commission}
                         </td>
                       </tr>
                     ))}
@@ -370,4 +419,4 @@ const Balancetes: React.FC = () => {
   );
 };
 
-export default Balancetes;
+export default Afiliados;
